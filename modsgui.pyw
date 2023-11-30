@@ -11,111 +11,115 @@ def guiColumn(col, size):
 def kfv(dick, value):
     return list(dick.keys())[list(dick.values()).index(value)]
 
-def main(f):
+file = ""
+namefile = {}
+filepath = {}
+mods = []
+
+def start(src):
+    global file
+    global namefile
+    global filepath
+    global mods
+    global f
     f.seek(0)
-    file = f.read().split("\n")
+    file = src.read().split("\n")
+    if file[0] == "":
+        layout = [[sg.Text("Enter location of minecraft mods folder")],
+                  [sg.Input(), sg.FolderBrowse()],
+                  [guiButton("OK")]]
+        window = sg.Window("First time setup", layout)
+        event, values = window.read()
+        window.close()
+        src.write(values[0])
+        src.seek(0)
     namefile = {}
     filepath = {}
+    for i in file[1:]:
+        if i == "":
+            break
+        i = i.split(",")
+        fn = i[1].split("/")[-1]
+        namefile[i[0]] = fn
+        filepath[fn] = i[1]
     mods = []
-    def start():
-        f.seek(0)
-        file = f.read().split("\n")
-        if file[0] == "":
-            layout = [[sg.Text("Enter location of minecraft mods folder")],
-                      [sg.Input(), sg.FolderBrowse()],
-                      [guiButton("OK")]]
-            window = sg.Window("First time setup", layout)
-            event, values = window.read()
-            window.close()
-            f.write(values[0])
-            f.seek(0)
-        namefile.clear()
-        filepath.clear()
-        for i in file[1:]:
-            if i == "":
-                break
-            i = i.split(",")
-            fn = i[1].split("/")[-1]
-            namefile[i[0]] = fn
-            filepath[fn] = i[1]
-        mods.clear()
-        for i in os.listdir(file[0]):
-            if i in filepath:
-                i = kfv(namefile, i)
-            else:
-                i = "? " + i
-            mods.append([True, i])
-        for i in namefile:
-            if not namefile[i] in os.listdir(file[0]):
-                mods.append([False, i])
+    for i in os.listdir(file[0]):
+        if i in filepath:
+            i = kfv(namefile, i)
+        else:
+            i = "? " + i
+        mods.append([True, i])
+    for i in namefile:
+        if not namefile[i] in os.listdir(file[0]):
+            mods.append([False, i])
 
-        guiMods = []
-        for i in mods:
-            guiMods.append([sg.CBox(i[1], default=i[0])])
-        layout = [[sg.Text("Mods")],
-                  [guiColumn(guiMods, (300,300))],
-                  [guiButton("Apply"), guiButton("Add mod")],
-                  [guiButton("Refresh"), guiButton("Quit")]]
-        window = sg.Window("Mod manager", layout)
-        event, values = window.read()
-        window.close()
+    guiMods = []
+    for i in mods:
+        guiMods.append([sg.CBox(i[1], default=i[0])])
+    layout = [[sg.Text("Mods")],
+              [guiColumn(guiMods, (300,300))],
+              [guiButton("Apply"), guiButton("Add mod")],
+              [guiButton("Refresh"), guiButton("Quit")]]
+    window = sg.Window("Mod manager", layout)
+    event, values = window.read()
+    window.close()
 
-        match event:
-            case "Apply":
-                apply(values)
-            case "Add mod":
-                addmod()
-            case "Refresh":
-                pass
-            case "Quit":
-                sys.exit()
-        start()
+    match event:
+        case "Apply":
+            apply(values)
+        case "Add mod":
+            addmod()
+        case "Refresh":
+            pass
+        case "Quit":
+            sys.exit()
+    start(f)
 
-    def apply(status):
-        for i in range(len(mods)):
-            ouchy = False
-            if mods[i][1][0] == "?":
-                mods[i][1] = mods[i][1][2:]
-                ouchy = True
-            else:
-                mods[i][1] = namefile[mods[i][1]]
-            if status[i] & (not mods[i][0]):
-                shutil.copy(filepath[mods[i][1]], file[0])
-            elif (not status[i]) & mods[i][0]:
-                if ouchy:
+def apply(status):
+    for i in range(len(mods)):
+        ouchy = False
+        if mods[i][1][0] == "?":
+            mods[i][1] = mods[i][1][2:]
+            ouchy = True
+        else:
+            mods[i][1] = namefile[mods[i][1]]
+        if status[i] & (not mods[i][0]):
+            shutil.copy(filepath[mods[i][1]], file[0])
+        elif (not status[i]) & mods[i][0]:
+            if ouchy:
 
-                    layout = [[sg.Text("File " + mods[i][1])],
-                              [sg.Text("not known by the program.")],
-                              [sg.Text("Removing it may be irrevirsible")],
-                              [sg.Text("Confirm removal?")],
-                              [sg.Button("Confirm"), sg.Button("Skip it")]]
-                    window = sg.Window("Confirm removal", layout)
-                    event, values = window.read()
-                    window.close()
+                layout = [[sg.Text("File " + mods[i][1])],
+                          [sg.Text("not known by the program.")],
+                          [sg.Text("Removing it may be irrevirsible")],
+                          [sg.Text("Confirm removal?")],
+                          [sg.Button("Confirm"), sg.Button("Skip it")]]
+                window = sg.Window("Confirm removal", layout)
+                event, values = window.read()
+                window.close()
 
-                    match event:
-                        case "Confirm":
-                            pass
-                        case "Skip it":
-                            continue
-                os.remove(file[0] + "/" + mods[i][1])
+                match event:
+                    case "Confirm":
+                        pass
+                    case "Skip it":
+                        continue
+            os.remove(file[0] + "/" + mods[i][1])
 
-    def addmod():
-        
-        layout = [[sg.Text("mod location")],
-                  [sg.Input(size=25), sg.FileBrowse(file_types=(("JAR Files", "*.jar"),))],
-                  [sg.Input("Name", size=17)],
-                  [guiButton("OK"), guiButton("Cancel")]]
-        window = sg.Window("Add mod", layout)
-        event, values = window.read()
-        window.close()
+def addmod():
+    global f
 
-        match event:
-            case "OK":
-                f.write("\n" + values[1] + "," + values[0])
-            case "Cancel":
-                pass
+    layout = [[sg.Text("mod location")],
+              [sg.Input(size=25), sg.FileBrowse(file_types=(("JAR Files", "*.jar"),))],
+              [sg.Input("Name", size=17)],
+              [guiButton("OK"), guiButton("Cancel")]]
+    window = sg.Window("Add mod", layout)
+    event, values = window.read()
+    window.close()
 
-    start()
+    match event:
+        case "OK":
+            f.write("\n" + values[1] + "," + values[0])
+        case "Cancel":
+            pass
+
 with open("mods.csv", "a+") as f:
-    main(f)
+    start(f)
