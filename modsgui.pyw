@@ -27,7 +27,6 @@ def main(f):
             window = sg.Window("First time setup", layout)
             event, values = window.read()
             window.close()
-
             f.write(values[0])
             f.seek(0)
         namefile.clear()
@@ -35,8 +34,7 @@ def main(f):
         for i in file[1:]:
             if i == "":
                 break
-            colon = i.index(":")
-            i = [i[:colon], i[colon+1:]]
+            i = i.split(",")
             fn = i[1].split("/")[-1]
             namefile[i[0]] = fn
             filepath[fn] = i[1]
@@ -55,9 +53,9 @@ def main(f):
         for i in mods:
             guiMods.append([sg.CBox(i[1], default=i[0])])
         layout = [[sg.Text("Mods")],
-              [guiColumn(guiMods, (300,150))],
-              [guiButton("Apply"), guiButton("Add mod")],
-              [guiButton("Refresh"), guiButton("Quit")]]
+                  [guiColumn(guiMods, (300,300))],
+                  [guiButton("Apply"), guiButton("Add mod")],
+                  [guiButton("Refresh"), guiButton("Quit")]]
         window = sg.Window("Mod manager", layout)
         event, values = window.read()
         window.close()
@@ -114,10 +112,10 @@ def main(f):
 
         match event:
             case "OK":
-                f.write("\n" + values[1] + ":" + values[0])
+                f.write("\n" + values[1] + "," + values[0])
             case "Cancel":
                 pass
 
     start()
-with open("mods.txt", "a+") as f:
+with open("mods.csv", "a+") as f:
     main(f)
