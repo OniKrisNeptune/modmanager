@@ -4,11 +4,13 @@ from sys import exit
 import PySimpleGUI as sg
 sg.theme("dark grey 3")
 
+# gui functions
 def guiButton(key):
     return sg.Button(key, size=15)
 def guiColumn(col, size):
     return sg.Column(col, size=size, scrollable=True, vertical_scroll_only=True)
 
+# general functions
 def getAll(index, arr):
     output = []
     for i in arr:
@@ -19,17 +21,19 @@ def main(f):
     f.seek(0)
     file = f.read().split("\n")
     if file[0] == "":
+        
         layout = [[sg.Text("Enter location of minecraft mods folder")],
                   [sg.Input(), sg.FolderBrowse()],
                   [guiButton("OK")]]
         window = sg.Window("First time setup", layout)
         event, values = window.read()
         window.close()
+        
         f.write(values[0])
         f.seek(0)
     mods = []
-    for i in file[1:]:
-        if i == "":
+    for i in file[1:]: # parses csv as list of mods
+        if i == "":    # format of mod: [name, filepath, filename]
             break
         i = i.split(",")
         mods.append([i[0], i[1], i[1].split("/")[-1]])
@@ -38,17 +42,17 @@ def main(f):
     files = getAll(2, mods)
     active = listdir(file[0])
     listofMods = []
-    for i in active:
+    for i in active: # sees which mods are in the minecraft directory
         if i in files:
             i = mods[files.index(i)][0]
         else:
             i = "? " + i
         listofMods.append([i, True])
-    for i in names:
+    for i in names: # checks which mods aren't in the minecraft directory
         if not i in active:
             listofMods.append([i, False])
     column = []
-    for i in listofMods:
+    for i in listofMods: # puts the mods into the gui column
         column.append([sg.CBox(i[0], default=i[1])])
         
     layout = [[sg.Text("Mods")],
@@ -62,18 +66,18 @@ def main(f):
     match event:
         case "Apply":
             for i, e in enumerate(listofMods):
-                ouchy = False
+                ouchy = False # if it needs a warning or not
                 modname = e[0]
                 if modname[0] == "?":
                     modname = modname[2:]
                     ouchy = True
                 else:
                     modname = files[names.index(modname)]
-                if values[i] & (not e[1]):
+                if values[i] & (not e[1]): # install mod
                     copy(paths[files.index(modname)], file[0])
-                elif (not values[i]) & e[1]:
+                elif (not values[i]) & e[1]: # uninstall mod
                     if ouchy:
-
+                        
                         layout = [[sg.Text("File " + mods[i][1])],
                                   [sg.Text("not known by the program.")],
                                   [sg.Text("Removing it may be irrevirsible")],
@@ -90,6 +94,7 @@ def main(f):
                                 continue
                     remove(file[0] + "/" + modname)
         case "Add mod":
+            
             layout = [[sg.Text("mod location")],
                       [sg.Input(size=25), sg.FileBrowse(file_types=(("JAR Files", "*.jar"),))],
                       [sg.Input("Name", size=17)],
