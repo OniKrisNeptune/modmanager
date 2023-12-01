@@ -21,14 +21,14 @@ def main(f):
     f.seek(0)
     file = f.read().split("\n")
     if file[0] == "":
-        
+
         layout = [[sg.Text("Enter location of minecraft mods folder")],
                   [sg.Input(), sg.FolderBrowse()],
                   [guiButton("OK")]]
         window = sg.Window("First time setup", layout)
         event, values = window.read()
         window.close()
-        
+
         f.write(values[0])
         f.seek(0)
     mods = []
@@ -54,7 +54,7 @@ def main(f):
     column = []
     for i in listofMods: # puts the mods into the gui column
         column.append([sg.CBox(i[0], default=i[1])])
-        
+
     layout = [[sg.Text("Mods")],
               [guiColumn(column, (300,300))],
               [guiButton("Apply"), guiButton("Add mod")],
@@ -77,7 +77,7 @@ def main(f):
                     copy(paths[files.index(modname)], file[0])
                 elif (not values[i]) & e[1]: # uninstall mod
                     if ouchy:
-                        
+
                         layout = [[sg.Text("File " + mods[i][1])],
                                   [sg.Text("not known by the program.")],
                                   [sg.Text("Removing it may be irrevirsible")],
@@ -94,7 +94,7 @@ def main(f):
                                 continue
                     remove(file[0] + "/" + modname)
         case "Add mod":
-            
+
             layout = [[sg.Text("mod location")],
                       [sg.Input(size=25), sg.FileBrowse(file_types=(("JAR Files", "*.jar"),))],
                       [sg.Input("Name", size=17)],
