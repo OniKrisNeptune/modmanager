@@ -58,7 +58,7 @@ def main(f):
     layout = [[sg.Text("Mods")],
               [guiColumn(column, (300,300))],
               [guiButton("Apply"), guiButton("Add mod")],
-              [guiButton("Refresh"), guiButton("Quit")]]
+              [guiButton("Refresh"), guiButton("Exit")]]
     window = sg.Window("Mod manager", layout)
     event, values = window.read()
     window.close()
@@ -110,7 +110,7 @@ def main(f):
                     pass
         case "Refresh":
             pass
-        case "Quit":
+        case sg.WIN_CLOSED | "Exit":
             exit()
 
 with open("mods.csv", "a+") as f:
