@@ -1,6 +1,7 @@
 from os import remove, listdir
 from shutil import copy
 from sys import exit
+from zipfile import ZipFile
 import PySimpleGUI as sg
 sg.theme("dark grey 3")
 
@@ -22,7 +23,7 @@ def main(f):
     file = f.read().split("\n")
     if file[0] == "":
 
-        layout = [[sg.Text("Enter location of minecraft mods folder")],
+        layout = [[sg.Text("Enter location of minecraft folder")],
                   [sg.Input(), sg.FolderBrowse()],
                   [guiButton("OK")]]
         window = sg.Window("First time setup", layout)
@@ -40,7 +41,8 @@ def main(f):
     names = getAll(0, mods)
     paths = getAll(1, mods)
     files = getAll(2, mods)
-    active = listdir(file[0])
+    minecraft = file[0]
+    active = listdir(minecraft + "/mods")
     listofMods = []
     for i in active: # sees which mods are in the minecraft directory
         if i in files:
@@ -58,7 +60,7 @@ def main(f):
     layout = [[sg.Text("Mods")],
               [guiColumn(column, (300,300))],
               [guiButton("Apply"), guiButton("Add mod")],
-              [guiButton("Refresh"), guiButton("Exit")]]
+              [guiButton("Refresh"), guiButton("Add map")]]
     window = sg.Window("Mod manager", layout)
     event, values = window.read()
     window.close()
@@ -74,7 +76,7 @@ def main(f):
                 else:
                     modname = files[names.index(modname)]
                 if values[i] & (not e[1]): # install mod
-                    copy(paths[files.index(modname)], file[0])
+                    copy(paths[files.index(modname)], file[0] + "/mods")
                 elif (not values[i]) & e[1]: # uninstall mod
                     if ouchy:
 
@@ -92,12 +94,13 @@ def main(f):
                                 pass
                             case "Skip it":
                                 continue
-                    remove(file[0] + "/" + modname)
+                    remove(file[0] + "/mods/" + modname)
         case "Add mod":
 
-            layout = [[sg.Text("mod location")],
-                      [sg.Input(size=25), sg.FileBrowse(file_types=(("JAR Files", "*.jar"),))],
                       [sg.Input("Name", size=17)],
+            layout = [[sg.Input("mod location", size=20), sg.FileBrowse(
+                          file_types=(("JAR Files", "*.jar"),), size=13)],
+                      [sg.Input("Name", size=20)],
                       [guiButton("OK"), guiButton("Cancel")]]
             window = sg.Window("Add mod", layout)
             event, values = window.read()
@@ -110,7 +113,22 @@ def main(f):
                     pass
         case "Refresh":
             pass
-        case sg.WIN_CLOSED | "Exit":
+        case "Add map":
+
+            layout = [[sg.Input("map zip file", size=20), sg.FileBrowse(
+                          file_types=(("ZIP Files", "*.zip"),), size=13)],
+                      [guiButton("OK"), guiButton("Cancel")]]
+            window = sg.Window("Add mod", layout)
+            event, values = window.read()
+            window.close()
+
+            match event:
+                case "OK":
+                    with ZipFile(values[0], "r") as zipped:
+                        zipped.extractall(path=minecraft + "/saves")
+                case "Cancel":
+                    pass
+        case sg.WIN_CLOSED:
             exit()
 
 with open("mods.csv", "a+") as f:
