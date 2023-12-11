@@ -97,9 +97,7 @@ def main(f):
                     remove(file[0] + "/mods/" + modname)
         case "Add mod":
 
-                      [sg.Input("Name", size=17)],
-            layout = [[sg.Input("mod location", size=20), sg.FileBrowse(
-                          file_types=(("JAR Files", "*.jar"),), size=13)],
+            layout = [[sg.Input("mod location", size=20), sg.FileBrowse(file_types=(("JAR Files", "*.jar"),), size=13)],
                       [sg.Input("Name", size=20)],
                       [guiButton("OK"), guiButton("Cancel")]]
             window = sg.Window("Add mod", layout)
