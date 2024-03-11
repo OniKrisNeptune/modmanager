@@ -1,3 +1,9 @@
+# Stopped due to pysimplegui license changes.
+
+
+
+
+
 # modmanager
 GUI made with [PySimpleGUI](PySimpleGUI.com), heres the current version:
 
